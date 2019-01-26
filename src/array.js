@@ -46,12 +46,28 @@ class CharArray {
         throw new CharError(`Direct array update is not allowed`)
     }
 
+    getArraySize () {
+        return this._array.length
+    }
+
+    setArraySize () {
+        throw new CharError(`Direct array size update is not allowed`)
+    }
+
     get array () {
         return this.getArray()
     }
 
     set array (arr) {
         return this.setArray(arr)
+    }
+
+    get size () {
+        return this.getArraySize()
+    }
+
+    set size () {
+        return this.setArraySize()
     }
 
     getLimit () {
@@ -75,20 +91,43 @@ class CharArray {
         return this.setLimit(val)
     }
 
-    writeChar (char) {
+    write (char, index = -1) {
         if (char instanceof Char) {
             if (this._limit > NO_LIMIT && + this._array.length >= this._limit) {
                 throw new CharError(`Cannot add char to array: reached limit ${this._array.length} >= ${this._limit}`)
             }
-            this._array.push(char)
+            let idx = parseInt(index)
+            if (idx && !isNaN(idx)) {
+                if (idx > -1) {
+                    this._array.splice(idx, 0, char)
+                } else {
+                    this._array.push(char)
+                    idx = this._array.length - 1
+                }
+                return idx
+            } else {
+                throw new CharError(`Provided index is not an integer`)
+            }
         } else {
             throw new CharError(`Cannot add non-char instance to array`)
         }
     }
 
-    write (string) {
+    erase (index) {
+        if (index > -1) {
+            if (this._array.length > index) {
+                return this._array.splice(index, 1)
+            } else {
+                throw new CharError(`Cannot lookup index beyond array length`)
+            }
+        } else {
+            throw new CharError(`Cannot lookup negative index to remove`)
+        }
+    }
+
+    writeString (string) {
         if (string && string === string.toString()) {
-            string.toString().split('').forEach(s => this.writeChar(new Char(s)))
+            string.toString().split('').forEach(s => this.write(new Char(s)))
         } else {
             throw new CharError(`Cannot write to array: expected string, got ${typeof string}`)
         }

@@ -24,6 +24,7 @@ const ENCODING  = `utf-8`
 const BYTE_SIZE = 4 // max unicode byte size
 const U_LENGTH  = 1 // unit length
 const S_INVALID = -1 // invalid default byte size
+const __CHARS__ = new Set()
 
 /*
  * Error wrapper
@@ -35,6 +36,10 @@ class CharError extends Error { /* inherit */ }
  */
 class Char {
 
+    static get CHARS () {
+        return __CHARS__
+    }
+
     static get BYTE_SIZE () {
         return BYTE_SIZE
     }
@@ -45,6 +50,23 @@ class Char {
 
     static get ENCODING () {
         return ENCODING
+    }
+
+    static Create (char) {
+        if (!char) {
+            throw new CharError(`Cannot create char from non-existing argument`)
+        }
+        let _char = null
+        for (let c of Char.CHARS) {
+            if (c.value === char) {
+                _char = c
+            }
+        }
+        if (!_char) {
+            _char = new Char(char)
+            Char.CHARS.add(_char)
+        }
+        return _char
     }
 
     static Error (message) {
@@ -97,12 +119,28 @@ class Char {
         return this._size > S_INVALID
     }
 
+    getHexValue () {
+        if (this.hasValue()) {
+            let hex = this._buff.toString('hex')
+            return `0x${hex}`
+        }
+        throw new CharError(`Char is not set`)
+    }
+
     get value () {
         return this.getValue()
     }
 
     set value (value) {
         return this.setValue(value)
+    }
+
+    get hex () {
+        return this.getHexValue()
+    }
+
+    set hex () {
+        throw new CharError(`Cannot set hex value`)
     }
 }
 
